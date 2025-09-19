@@ -1,0 +1,72 @@
+/* Reset một chút cho đồng bộ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Toàn trang */
+body {
+    background: #f4f6f9;
+    color: #333;
+    padding: 40px;
+}
+
+/* Tiêu đề */
+h1 {
+    text-align: center;
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+    color: #2c3e50;
+}
+
+h2 {
+    text-align: center;
+    font-size: 1.4rem;
+    margin-bottom: 30px;
+    color: #555;
+}
+
+/* Bảng */
+table {
+    width: 80%;
+    margin: 0 auto;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Header bảng */
+table thead {
+    background: #2c3e50;
+    color: #fff;
+}
+
+table thead th {
+    padding: 15px;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Dòng dữ liệu */
+table tbody td {
+    padding: 12px;
+    text-align: center;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #eee;
+}
+
+/* Hiệu ứng khi hover */
+table tbody tr:hover {
+    background: #f1f7ff;
+    transition: 0.3s;
+}
+
+/* Dòng cuối không có border */
+table tbody tr:last-child td {
+    border-bottom: none;
+}

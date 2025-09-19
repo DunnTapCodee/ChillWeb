@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>To‑Do List</title>
+    <meta name="description"
+        content="To‑Do List single‑file app with localStorage, tìm kiếm, lọc, sắp xếp, kéo‑thả, dark mode." />
+    <style>
+        :root {
+            --bg: #0b0c0f;
+            --panel: #12141a;
+            --muted: #8b94a7;
+            --text: #e8ecf1;
+            --primary: #6ea8fe;
+            --primary-600: #3d7bfd;
+            --accent: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --ring: rgba(109, 168, 254, 0.5);
+            --border: #1e2230;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #f6f7fb;
+                --panel: #ffffff;
+                --muted: #5b6270;
+                --text: #0f172a;
+                --primary: #2563eb;
+                --primary-600: #1d4ed8;
+                --accent: #16a34a;
+                --danger: #dc2626;
+                --warning: #d97706;
+                --ring: rgba(37, 99, 235, .35);
+                --border: #e5e7eb;
+                --shadow: 0 10px 30px rgba(2, 6, 23, .08);
+            }
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+            background: radial-gradient(1200px 600px at 100% -10%, rgba(99, 102, 241, .08), transparent 40%),
+                radial-gradient(800px 400px at 0% 100%, rgba(34, 197, 94, .08), transparent 40%),
+                var(--bg);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 32px auto;
+            padding: 0 16px
+        }
+
+        header.app {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            justify-content: space-between;
+            margin-bottom: 18px
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            box-shadow: var(--shadow);
+            display: grid;
+            place-items: center
+        }
+
+        .logo svg {
+            width: 22px;
+            height: 22px;
+            fill: #fff
+        }
+
+        h1 {
+            font-size: clamp(22px, 2.2vw, 28px);
+            margin: 0
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        .btn {
+            appearance: none;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: var(--text);
+            padding: 10px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: .2s;
+            box-shadow: var(--shadow)
+        }
+
+        .btn:hover {
+            transform: translateY(-1px)
+        }
+
+        .btn:focus {
+            outline: 2px solid transparent;
+            box-shadow: 0 0 0 4px var(--ring)
+        }
+
+        .btn.primary {
+            background: linear-gradient(180deg, var(--primary), var(--primary-600));
+            border-color: transparent
+        }
+
+        .btn.ghost {
+            background: transparent
+        }
+
+        .board {
+            background: rgba(0, 0, 0, .04);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 18px;
+            backdrop-filter: saturate(140%) blur(8px)
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1.1fr .9fr;
+            gap: 18px
+        }
+
+        @media (max-width: 860px) {
+            .grid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: var(--shadow)
+        }
+
+        .panel .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px dashed var(--border)
+        }
+
+        .panel .body {
+            padding: 14px 16px
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 140px 130px 56px;
+            gap: 10px
+        }
+
+        @media (max-width:640px) {
+            .input-row {
+                grid-template-columns: 1fr 1fr
+            }
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: color-mix(in oklab, var(--panel) 92%, #000 8%);
+            color: var(--text);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, .03)
+        }
+
+        textarea {
+            min-height: 70px;
+            resize: vertical
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: var(--muted)
+        }
+
+        .list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        .item {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 12px;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: color-mix(in oklab, var(--panel) 96%, #000 4%)
+        }
+
+        .item[draggable="true"] {
+            cursor: grab
+        }
+
+        .drag-handle {
+            opacity: .6
+        }
+
+        .checkbox {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            border: 2px solid var(--border);
+            display: grid;
+            place-items: center;
+            background: var(--panel)
+        }
+
+        .checkbox:checked {
+            background: conic-gradient(from 180deg at 50% 50%, var(--accent), #10b981);
+            border-color: transparent
+        }
+
+        .checkbox:checked+.title {
+            opacity: .6;
+            text-decoration: line-through
+        }
+
+        .title {
+            font-weight: 600
+        }
+
+        .meta {
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .tag {
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            font-size: 12px
+        }
+
+        .tag.high {
+            border-color: color-mix(in oklab, var(--danger) 70%, var(--border) 30%);
+            color: var(--danger)
+        }
+
+        .tag.medium {
+            border-color: color-mix(in oklab, var(--warning) 70%, var(--border) 30%);
+            color: var(--warning)
+        }
+
+        .tag.low {
+            border-color: color-mix(in oklab, var(--accent) 70%, var(--border) 30%);
+            color: var(--accent)
+        }
+
+        .item .actions {
+            display: flex;
+            gap: 8px
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 8px;
+            border-radius: 12px;
+            cursor: pointer
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, .05)
+        }
+
+        .icon {
+            width: 18px;
+            height: 18px;
+            display: block;
+            fill: currentColor
+        }
+
+        .toolbar {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px
+        }
+
+        @media (max-width:900px) {
+            .toolbar {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .search {
+            position: relative
+        }
+
+        .search input {
+            padding-left: 38px
+        }
+
+        .search svg {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: .6
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px
+        }
+
+        .seg {
+            display: flex;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden
+        }
+
+        .seg button {
+            border: 0;
+            background: transparent;
+            padding: 8px 12px;
+            color: var(--muted);
+            cursor: pointer
+        }
+
+        .seg button.active {
+            background: var(--panel);
+            color: var(--text)
+        }
+
+        .sr {
+            position: absolute;
+            left: -9999px
+        }
+
+        .muted {
+            color: var(--muted)
+        }
+
+        footer {
+            margin-top: 18px;
+            color: var(--muted);
+            font-size: 12px;
+            text-align: center
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="app" aria-label="Thanh tiêu đề ứng dụng">
+            <div class="brand" aria-label="Thương hiệu">
+                <div class="logo" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 3H5a2 2 0 0 0-2 2v14l4-3h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z" />
+                    </svg>
+                </div>
+                <h1>To‑Do List</h1>
+            </div>
+            <div class="controls">
+                <button id="toggleTheme" class="btn ghost" aria-pressed="false"
+                    title="Bật/Tắt giao diện tối">🌗</button>
+                <button id="clearCompleted" class="btn" title="Xoá tất cả đã hoàn thành">Xoá hoàn thành</button>
+                <button id="completeAll" class="btn primary" title="Đánh dấu tất cả hoàn thành">Hoàn thành tất
+                    cả</button>
+            </div>
+        </header>
+
+        <section class="board">
+            <div class="grid">
+                <!-- Left: Create / Edit -->
+                <article class="panel" aria-labelledby="taskFormTitle">
+                    <div class="header">
+                        <h2 id="taskFormTitle" style="margin:0;font-size:18px">Thêm công việc</h2>
+                    </div>
+                    <div class="body">
+                        <form id="taskForm" autocomplete="off">
+                            <label class="sr" for="title">Tiêu đề</label>
+                            <div class="input-row" style="margin-bottom:10px">
+                                <input id="title" name="title" type="text" placeholder="Làm bài tập HTML…" required />
+                                <input id="due" name="due" type="date" />
+                                <select id="priority" name="priority" aria-label="Mức độ ưu tiên">
+                                    <option value="low">Thấp</option>
+                                    <option value="medium" selected>Trung bình</option>
+                                    <option value="high">Cao</option>
+                                </select>
+                                <button class="btn primary" type="submit" aria-label="Thêm">Thêm</button>
+                            </div>
+                            <label class="sr" for="notes">Ghi chú</label>
+                            <textarea id="notes" name="notes" placeholder="Mô tả chi tiết, link tham khảo…"></textarea>
+                        </form>
+                        <p class="muted" style="margin-top:8px">Mẹo: nhấn <kbd>Enter</kbd> để thêm nhanh • <kbd>Ctrl/⌘ +
+                                K</kbd> để tìm kiếm • Kéo‑thả để sắp xếp.</p>
+                    </div>
+                </article>
+
+                <!-- Right: Tools -->
+                <aside class="panel" aria-labelledby="toolsTitle">
+                    <div class="header">
+                        <h2 id="toolsTitle" style="margin:0;font-size:18px">Tìm kiếm, lọc & sắp xếp</h2>
+                    </div>
+                    <div class="body">
+                        <div class="toolbar" role="group" aria-label="Thanh công cụ bộ lọc">
+                            <div class="search">
+                                <label class="sr" for="q">Tìm kiếm</label>
+                                <input id="q" type="text" placeholder="Tìm theo tiêu đề/ghi chú…" />
+                                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M21 21l-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" />
+                                </svg>
+                            </div>
+                            <div class="filters" aria-label="Trạng thái">
+                                <div class="seg" role="tablist" aria-label="Lọc theo trạng thái">
+                                    <button class="active" data-filter="all" role="tab">Tất cả</button>
+                                    <button data-filter="active" role="tab">Chưa xong</button>
+                                    <button data-filter="completed" role="tab">Đã xong</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="sr" for="sort">Sắp xếp</label>
+                                <select id="sort">
+                                    <option value="created_desc">Mới nhất</option>
+                                    <option value="created_asc">Cũ nhất</option>
+                                    <option value="due_asc">Hạn gần nhất</option>
+                                    <option value="due_desc">Hạn xa nhất</option>
+                                    <option value="priority_desc">Ưu tiên cao → thấp</option>
+                                    <option value="priority_asc">Ưu tiên thấp → cao</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- List -->
+            <article class="panel" style="margin-top:18px" aria-labelledby="listTitle">
+                <div class="header">
+                    <h2 id="listTitle" style="margin:0;font-size:18px">Danh sách công việc</h2>
+                    <span id="count" class="muted" aria-live="polite">0 mục</span>
+                </div>
+                <div class="body">
+                    <div id="list" class="list" aria-live="polite" aria-relevant="additions removals"></div>
+                </div>
+            </article>
+        </section>
+
+        <footer>
+            <p>Made with ❤️ • Lưu trữ cục bộ (không cần mạng) • Mã nguồn đơn file HTML</p>
+        </footer>
+    </div>
+
+    <template id="itemTemplate">
+        <div class="item" draggable="true" data-id="">
+            <input type="checkbox" class="checkbox" aria-label="Hoàn thành" />
+            <div>
+                <div class="title"></div>
+                <div class="meta"></div>
+            </div>
+            <div class="actions">
+                <button class="icon-btn" data-action="edit" title="Sửa">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path
+                            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42L18.37 3.29a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.83z" />
+                    </svg>
+                </button>
+                <button class="icon-btn" data-action="delete" title="Xoá">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path
+                            d="M6 7h12M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-1 0v12a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2V7" />
+                    </svg>
+                </button>
+                <button class="icon-btn drag-handle" title="Kéo để sắp xếp" aria-label="Kéo để sắp xếp">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M10 4h4v2h-4V4zm0 7h4v2h-4v-2zm0 7h4v2h-4v-2z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        // ===== Utilities =====
+        const $ = (sel, el = document) => el.querySelector(sel);
+        const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
+        const uid = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+
+        const PRIORITY_ORDER = { high: 3, medium: 2, low: 1 };
+
+        // ===== State & Storage =====
+        const store = {
+            key: 'todo.v2',
+            read() {
+                try { return JSON.parse(localStorage.getItem(this.key)) || { items: [], prefs: { theme: null } }; } catch { return { items: [], prefs: { theme: null } } }
+            },
+            write(data) { localStorage.setItem(this.key, JSON.stringify(data)); }
+        };
+
+        let state = store.read();
+
+        // ===== Elements =====
+        const listEl = $('#list');
+        const formEl = $('#taskForm');
+        const titleEl = $('#title');
+        const dueEl = $('#due');
+        const notesEl = $('#notes');
+        const priorityEl = $('#priority');
+        const countEl = $('#count');
+        const qEl = $('#q');
+        const sortEl = $('#sort');
+        const filterBtns = $$('.seg button');
+
+        const toggleThemeBtn = $('#toggleTheme');
+        const clearCompletedBtn = $('#clearCompleted');
+        const completeAllBtn = $('#completeAll');
+
+        let filter = 'all';
+
+        // ===== Theme =====
+        const applyTheme = (mode) => {
+            const root = document.documentElement;
+            if (mode === 'dark') {
+                root.style.colorScheme = 'dark';
+                toggleThemeBtn.setAttribute('aria-pressed', 'true');
+            } else if (mode === 'light') {
+                root.style.colorScheme = 'light';
+                toggleThemeBtn.setAttribute('aria-pressed', 'false');
+            } else {
+                root.style.colorScheme = 'normal';
+                toggleThemeBtn.setAttribute('aria-pressed', 'false');
+            }
+        };
+
+        const initTheme = () => {
+            const pref = state.prefs?.theme ?? null;
+            applyTheme(pref);
+        };
+
+        toggleThemeBtn.addEventListener('click', () => {
+            const current = state.prefs?.theme ?? null;
+            const next = current === 'dark' ? 'light' : current === 'light' ? null : 'dark';
+            state.prefs = state.prefs || {}; state.prefs.theme = next;
+            store.write(state);
+            applyTheme(next);
+        });
+
+        // ===== Rendering =====
+        function formatDate(d) {
+            if (!d) return 'Không hạn';
+            const dt = new Date(d + 'T00:00:00');
+            return dt.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        function render() {
+            const query = qEl.value.trim().toLowerCase();
+            const sort = sortEl.value;
+            const items = state.items.slice();
+
+            // Filter
+            let filtered = items.filter(it => {
+                const matchesQ = !query || (it.title + "\n" + (it.notes || '')).toLowerCase().includes(query);
+                const matchesFilter = filter === 'all' || (filter === 'active' && !it.completed) || (filter === 'completed' && !!it.completed);
+                return matchesQ && matchesFilter;
+            });
+
+            // Sort
+            filtered.sort((a, b) => {
+                switch (sort) {
+                    case 'created_asc': return a.createdAt - b.createdAt;
+                    case 'created_desc': return b.createdAt - a.createdAt;
+                    case 'due_asc': return (a.due || '9999-12-31').localeCompare(b.due || '9999-12-31');
+                    case 'due_desc': return (b.due || '0000-01-01').localeCompare(a.due || '0000-01-01');
+                    case 'priority_desc': return PRIORITY_ORDER[b.priority] - PRIORITY_ORDER[a.priority];
+                    case 'priority_asc': return PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+                }
+                return 0;
+            });
+
+            // Render
+            listEl.innerHTML = '';
+            const tpl = $('#itemTemplate');
+            filtered.forEach(item => {
+                const node = tpl.content.firstElementChild.cloneNode(true);
+                node.dataset.id = item.id;
+                const checkbox = node.querySelector('.checkbox');
+                const title = node.querySelector('.title');
+                const meta = node.querySelector('.meta');
+                const editBtn = node.querySelector('[data-action="edit"]');
+                const delBtn = node.querySelector('[data-action="delete"]');
+
+                checkbox.checked = !!item.completed;
+                title.textContent = item.title;
+
+                const bits = [];
+                bits.push(item.due ? `Hạn: ${formatDate(item.due)}` : 'Không hạn');
+                bits.push(`Ưu tiên: <span class="tag ${item.priority}">` + (item.priority === 'high' ? 'Cao' : item.priority === 'medium' ? 'Trung bình' : 'Thấp') + '</span>');
+                if (item.notes) { bits.push('Ghi chú: ' + escapeHtml(item.notes)); }
+                meta.innerHTML = bits.join(' • ');
+
+                checkbox.addEventListener('change', () => toggleComplete(item.id));
+                editBtn.addEventListener('click', () => startEdit(item.id));
+                delBtn.addEventListener('click', () => remove(item.id));
+
+                // drag events
+                node.addEventListener('dragstart', onDragStart);
+                node.addEventListener('dragover', onDragOver);
+                node.addEventListener('drop', onDrop);
+
+                listEl.appendChild(node);
+            });
+
+            updateCount();
+        }
+
+        function escapeHtml(s) {
+            return s.replace(/[&<>\"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        }
+
+        function updateCount() {
+            const total = state.items.length;
+            const remaining = state.items.filter(x => !x.completed).length;
+            countEl.textContent = `${total} mục • ${remaining} chưa xong`;
+        }
+
+        // ===== CRUD =====
+        function add(item) {
+            state.items.unshift(item); // add to top
+            persistAndRender();
+        }
+
+        function update(id, patch) {
+            const idx = state.items.findIndex(it => it.id === id);
+            if (idx > -1) { state.items[idx] = { ...state.items[idx], ...patch, updatedAt: Date.now() }; }
+            persistAndRender();
+        }
+
+        function remove(id) {
+            state.items = state.items.filter(it => it.id !== id);
+            persistAndRender();
+        }
+
+        function toggleComplete(id) {
+            const it = state.items.find(x => x.id === id);
+            if (!it) return;
+            update(id, { completed: !it.completed });
+        }
+
+        function persistAndRender() {
+            store.write(state); render();
+        }
+
+        // ===== Form Logic =====
+        formEl.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = titleEl.value.trim();
+            if (!title) return;
+            const item = {
+                id: uid(), title,
+                due: dueEl.value || null,
+                priority: priorityEl.value,
+                notes: notesEl.value.trim() || '',
+                completed: false,
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+            };
+            add(item);
+            formEl.reset();
+            titleEl.focus();
+        });
+
+        titleEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                formEl.requestSubmit();
+            }
+        });
+
+        // Edit inline
+        function startEdit(id) {
+            const it = state.items.find(x => x.id === id); if (!it) return;
+            titleEl.value = it.title; dueEl.value = it.due || ''; notesEl.value = it.notes || ''; priorityEl.value = it.priority;
+            // Replace submit button text
+            const submitBtn = formEl.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Cập nhật';
+            submitBtn.dataset.editing = id;
+        }
+
+        formEl.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[type="submit"]');
+            if (!btn) return;
+            const editing = btn.dataset.editing;
+            if (editing) {
+                e.preventDefault();
+                const patch = { title: titleEl.value.trim(), due: dueEl.value || null, notes: notesEl.value.trim() || '', priority: priorityEl.value };
+                update(editing, patch);
+                btn.textContent = 'Thêm'; delete btn.dataset.editing;
+                formEl.reset();
+            }
+        });
+
+        // ===== Filters / Search / Sort =====
+        filterBtns.forEach(b => b.addEventListener('click', () => {
+            filterBtns.forEach(x => x.classList.remove('active'));
+            b.classList.add('active');
+            filter = b.dataset.filter;
+            render();
+        }));
+
+        qEl.addEventListener('input', render);
+        sortEl.addEventListener('change', render);
+
+        // ===== Bulk actions =====
+        clearCompletedBtn.addEventListener('click', () => {
+            const before = state.items.length;
+            state.items = state.items.filter(x => !x.completed);
+            if (state.items.length !== before) { persistAndRender(); }
+        });
+
+        completeAllBtn.addEventListener('click', () => {
+            const anyIncomplete = state.items.some(x => !x.completed);
+            state.items = state.items.map(x => ({ ...x, completed: anyIncomplete ? true : x.completed }));
+            persistAndRender();
+        });
+
+        // ===== Drag & Drop Reorder =====
+        let dragId = null;
+        function onDragStart(e) {
+            dragId = e.currentTarget.dataset.id;
+            e.dataTransfer.effectAllowed = 'move';
+        }
+        function onDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+        function onDrop(e) {
+            e.preventDefault();
+            const targetId = e.currentTarget.dataset.id;
+            if (!dragId || dragId === targetId) return;
+            const from = state.items.findIndex(x => x.id === dragId);
+            const to = state.items.findIndex(x => x.id === targetId);
+            const [moved] = state.items.splice(from, 1);
+            state.items.splice(to, 0, moved);
+            persistAndRender();
+            dragId = null;
+        }
+
+        // ===== Keyboard shortcuts =====
+        window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault(); qEl.focus(); qEl.select();
+            }
+        });
+
+        // ===== Init =====
+        initTheme();
+        render();
+
+        // Seed demo items if empty
+        if (state.items.length === 0) {
+            add({ id: uid(), title: 'Học HTML cơ bản', due: new Date(Date.now() + 86400000).toISOString().slice(0, 10), priority: 'high', notes: 'Thực hành thẻ, thuộc tính, cấu trúc', completed: false, createdAt: Date.now(), updatedAt: Date.now() });
+            add({ id: uid(), title: 'Làm bài to‑do list', due: null, priority: 'medium', notes: 'Xong là up GitHub Pages', completed: false, createdAt: Date.now(), updatedAt: Date.now() });
+            add({ id: uid(), title: 'Dọn dẹp thư mục dự án', due: null, priority: 'low', notes: 'Sắp xếp assets, README', completed: true, createdAt: Date.now(), updatedAt: Date.now() });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> Trang đầu tiên của tôi</title>
+    </head>
+    <body>
+        <header>
+            <h1> Blog của Dunn </h1>
+            <!-- <nav>
+                <a href="#home"> Trang chủ</a> |
+                <a href="#about">Giới thiệu</a>
+            </nav> -->
+            <div class="menu">
+            <a href="#" >Trang Chủ</a>
+            <a href="#" >Giới thiệu</a>
+            <a href="#" >Liên hệ</a>    
+        </div>
+        </header>
+
+        <h1> Xin chào, mình là Dunn</h1>
+        <p> 
+            Đêm 27/08/2025 - Rạng sáng 28/08/2025
+            Đây là trang web đầu tiên của mình, hôm nay mình
+            làm việc không được năng suất lắm nhưng mình thấy hôm 
+            nay được trải nghiệm nhiều điều thú vị, và đặc biệt hơn
+            là mình biết về lộ trình học HTML của mình trong những tháng sắp tới
+            hehehe.
+        </p>
+        <a href="https://www.facebook.com/dunnbesoo"> Trang Facebook cá nhân của mình </a>
+        <br>
+        <img src="dung.jpg" alt="Ảnh của Dũng" width="200">      
+    
+        <main>
+            <article>
+                <h2> Bài viết ngày 28/08/2025</h2>
+                <p>Hôm nay mình copy code HTML và CSS. Hiện tại mình vẫn khá mơ
+                     hồ về các tác vụ của HTML</p>
+            </article>
+        </main>
+
+        <footer>
+            <h4>© 2025 Dũng | Liên hệ: nguyentrungdungbxvp@gmail.com</h4>
+        </footer>
+    
+        <div class="box1"> Khối 1</div>
+        <div class="box2"> Khối 2</div>
+
+        <div class="grid-container">
+        <div class="sidebar">Menu</div>
+        <div class="content">Nội dung chính</div>
+        </div>
+        
+    </body>
+
+    <style>
+        body{
+                background-color: rgb(117, 111, 102);
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+        h1{
+                color:  rgb(151, 188, 234);
+                text-align: center;
+            }
+
+        p {
+            color: #e4dec0;
+            font-size: 18px;
+        }
+
+        a{
+            color: rgb(255, 255, 255);
+            text-decoration: none;
+        }
+
+        h4{
+            color: darkred;
+            text-align: right;
+        }
+
+        .box1{
+            background:  lightblue;
+        }
+        .box2{
+            background:  lightcoral;
+            width: 100px;
+            position: relative;
+            left: 200px;
+            padding-left: 50px; /* lùi nội dung */
+        }
+
+        div {
+            width: 200px;
+            padding: 10px;
+            border: none;
+            margin: 20px;
+        }
+        
+        .menu {
+            display: contents;
+            justify-content: space-around; 
+            background: #ddd;
+            padding: 10px;
+            border-radius: 8px; /* bo góc */
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+            padding: 8px 16px 24px;
+            transition: 0.3s;
+        }
+
+        .menu a:hover {
+            background: #bbb;
+            border-radius: 4px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 200px 1fr; /* cột trái 200px, cột phải chiếm phần còn lại */
+            gap: 20px;
+        }
+        .sidebar {
+            background: #eee;
+        }
+        .content {
+            background: #fff;
+        }
+
+    </style>
+
+</html>

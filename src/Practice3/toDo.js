@@ -29,6 +29,7 @@ if (saveBtn) {
             localStorage.setItem("todo", JSON.stringify([myTodo]));
         }
 
+
         // success
         window.location.href = "toDo.html";
 
