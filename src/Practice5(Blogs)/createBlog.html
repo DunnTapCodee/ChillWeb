@@ -1,0 +1,116 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            background: #f4f6f9;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 1.4rem;
+            margin-bottom: 30px;
+            color: #555;
+        }
+
+        .form-add {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-add input {
+            padding: 8px;
+            width: 250px;
+            margin-right: 8px;
+        }
+
+        .form-add button {
+            padding: 8px 16px;
+            background: #2c3e50;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .form-add button:hover {
+            background: #34495e;
+        }
+
+        #blogs {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #blogs thead {
+            background: #2c3e50;
+            color: #fff;
+        }
+
+        #blogs thead th {
+            padding: 15px;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        #blogs tbody td {
+            padding: 12px;
+            text-align: center;
+            font-size: 0.95rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        #blogs tbody tr:hover {
+            background: #f1f7ff;
+            transition: 0.3s;
+        }
+
+        #blogs tbody tr:last-child td {
+            border-bottom: none;
+        }
+    </style>
+
+</head>
+
+<body>
+    <h1> BLOGS </h1>
+    <div class="form-add">
+        <a> Title </a><input type="text" id="title" placeholder="Enter title..." />
+        <a> Author </a><input type="text" id="author" placeholder="Enter author..." />
+        <a> Content </a><input type="text" id="content" placeholder="Enter content..." />
+        <button id="saveBlog">Add Blog</button>
+    </div>
+        <table id="blogs">  
+        <thead>
+            <th>Id</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Content</th>
+            <th>Action</th>
+        </thead>
+        <tbody>
+            
+        </tbody>
+    </table>
+    <script src="createBlog.js" > </script>
+</body>
+
+</html>
